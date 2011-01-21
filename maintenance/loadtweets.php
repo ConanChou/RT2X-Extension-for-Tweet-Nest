@@ -110,7 +110,7 @@
 				if(!$q){
 					dieout(l(bad("DATABASE ERROR: " . $db->error())));
 				} elseif(stripos($tweet['text'], "#2r") !== false) {
-					hook("rt2RenRen", $tweet, true);
+					hook("rt2x", $tweet, true);
 				}
 				
 				$text = $tweet['text'];
