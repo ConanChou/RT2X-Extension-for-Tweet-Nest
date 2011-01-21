@@ -54,4 +54,4 @@
 		}
 	}
 	
-	$o = new Extension_Rt2RenRen();
+	$o = new Extension_Rt2X();
