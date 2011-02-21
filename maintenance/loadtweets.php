@@ -62,7 +62,7 @@
 			$uid        = $pd['value'];
 			$screenname = $twitterApi->getScreenName($pd['value']);
 		}
-		$tiQ = $db->query("SELECT `tweetid` FROM `".DTP."tweets` WHERE `userid` = '" . $db->s($uid) . "' ORDER BY `tweetid` DESC LIMIT 1");
+		$tiQ = $db->query("SELECT `tweetid` FROM `".DTP."tweets` WHERE `userid` = '" . $db->s($uid) . "' ORDER BY `id` DESC LIMIT 1");
 		if($db->numRows($tiQ) > 0){
 			$ti      = $db->fetch($tiQ);
 			$sinceID = $ti['tweetid'];
@@ -72,14 +72,17 @@
 		
 		// Find total number of tweets
 		$total = totalTweets($p);
-		if($total > 3200){ $total = 3200; } // Due to current Twitter bug
+		if($total > 3200){ $total = 3200; } // Due to current Twitter limitation
 		$pages = ceil($total / $maxCount);
 		
 		echo l("Total tweets: <strong>" . $total . "</strong>, Pages: <strong>" . $pages . "</strong>\n");
+		if($sinceID){
+			echo l("Newest tweet I've got: <strong>" . $sinceID . "</strong>\n");
+		}
 		
 		// Retrieve tweets
 		for($i = 0; $i < $pages; $i++){
-			$path = "1/statuses/user_timeline.json?" . $p . "&include_rts=true&count=" . $maxCount . ($sinceID > 0 ? "&since_id=" . $sinceID : "") . ($maxID > 0 ? "&max_id=" . $maxID : "");
+			$path = "1/statuses/user_timeline.json?" . $p . "&include_rts=true&count=" . $maxCount . ($sinceID ? "&since_id=" . $sinceID : "") . ($maxID ? "&max_id=" . $maxID : "");
 			echo l("Retrieving page <strong>#" . ($i+1) . "</strong>: <span class=\"address\">" . ls($path) . "</span>\n");
 			$data = $twitterApi->query($path);
 			if(is_array($data) && $data[0] === false){ dieout(l(bad("Error: " . $data[1] . "/" . $data[2]))); }
@@ -87,9 +90,9 @@
 			if(!$data){ break; } // No more tweets
 			echo l("<ul>");
 			foreach($data as $tweet){
-				echo l("<li>" . $tweet->id . " " . $tweet->created_at . "</li>\n");
+				echo l("<li>" . $tweet->id_str . " " . $tweet->created_at . "</li>\n");
 				$tweets[] = $twitterApi->transformTweet($tweet);
-				$maxID    = (float)((float)$tweet->id - 1);
+				$maxID    = sprintf("%.0F", (float)((float)$tweet->id - 1));
 			}
 			echo l("</ul>");
 			if(count($data) < ($maxCount - 50)){
@@ -109,10 +112,9 @@
 				$q = $db->query($twitterApi->insertQuery($tweet));
 				if(!$q){
 					dieout(l(bad("DATABASE ERROR: " . $db->error())));
-				} elseif(stripos($tweet['text'], "#2r") !== false) {
+				}elseif(stripos($tweet['text'], "#2[") !== false) {
 					hook("rt2x", $tweet, true);
 				}
-				
 				$text = $tweet['text'];
 				$te   = $tweet['extra'];
 				if(is_string($te)){ $te = @unserialize($tweet['extra']); }
@@ -131,10 +133,8 @@
 		
 		// Checking personal favorites -- scanning all
 		echo l("\n<strong>Syncing favourites...</strong>\n");
-		$pages    = ceil($total / $maxCount); // Resetting these
-		$sinceID  = 0;
-		$maxID    = 0;
-		$favs     = array();
+		$pages = ceil($total / $maxCount); // Resetting these
+		$favs  = array();
 		for($i = 0; $i < $pages; $i++){
 			$path = "1/favorites.json?" . $p . "&count=" . $maxCount . ($i > 0 ? "&page=" . $i : "");
 			echo l("Retrieving page <strong>#" . ($i+1) . "</strong>: <span class=\"address\">" . ls($path) . "</span>\n");
@@ -144,9 +144,9 @@
 			if(!$data){ break; } // No more tweets
 			echo l("<ul>");
 			foreach($data as $tweet){
-				if($tweet->user->id == $uid){
-					echo l("<li>" . $tweet->id . " " . $tweet->created_at . "</li>\n");
-					$favs[] = $tweet->id."";
+				if($tweet->user->id_str == $uid){
+					echo l("<li>" . $tweet->id_str . " " . $tweet->created_at . "</li>\n");
+					$favs[] = $tweet->id_str;
 				}
 			}
 			echo l("</ul>");
