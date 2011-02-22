@@ -4,29 +4,38 @@
 	 * Author: @ConanChou (http://conanblog.me)
 	 * Discription: RT2X Extension for Tweet Nest
 	 * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
-	 * Version 0.3
+	 * Version 0.3.2
 	 * Release Date 25/10/2010
 	****/
 
 	class Extension_Rt2X {
 		// Change accordingly
+		private $cookies_path = '';
 		private $cookie_files = array(
-					"renren_cookie" => ""
-					); // Full path to cookie files
+					"renren_cookie" => ".rt2renren.cookie",
+					); // Full path to cookie file
 		private $accounts = array(
 					"renren_email" => "",
-					"sina_email" => ""
-					); // Your accounts
+					"sina_email" => "",
+					"renjian_email" => "",
+					"fanfou_email" => ""
+					); // Your renren.com's login Email account
 		private $passwords = array(
 					"renren_password" => "",
-					"sina_password" => ""
-					); // Your passcodes
+					"sina_password" => "",
+					"renjian_password" => "",
+					"fanfou_password" => ""
+					); // Your renren.com's passcode
 		// Stop editing
-		
+		private $uris = array(
+					"renjian_uri" => 'http://api.renjian.com/statuses/update.xml',
+					"sina_uri" => 'http://api.t.sina.com.cn/statuses/update.json',
+					"fanfou_uri" => 'http://api.fanfou.com/statuses/update/update.xml'	
+					);
 		public function rt2x($tweet){
 						
 			$item = str_replace("RT ","转自▶",$tweet['text']);
-			$all_arr = array('r','s');
+			$all_arr = array('r','s','j','f');
 			$exception=false;
 			$ending = '';
 
@@ -77,42 +86,81 @@
 
 		private function rt2xManage($item, $cmd_arr){
 			
-
+			$item = urlencode($item);
 			foreach($cmd_arr as $cmd){
 				switch($cmd){
 					case "r": 
 						$this->send2RenRen($item);
-						echo l("renren done.\n");
 						break;
 					case "s":
 						$this->send2Sina($item);
-						echo l("sina done.\n");
 						break;
+					case "j":
+						$this->send2Renjian($item);
+						break;
+					case "f":
+						$this->send2Fanfou($item);
+						break;
+
 				}
 			}
 
 		}
+		
+		private function postManager($postdata,$hasSource, $user, $pwd, $url){
+			if($hasSource){
+				$postdata ['source'] = "RT2X";
+			}
+
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->createPostStr($postdata));
+			curl_setopt($ch, CURLOPT_USERPWD, "$user:$pwd");
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+			$ret = curl_exec($ch);
+			curl_close($ch);
+
+		}
+
+		private function createPostStr($data) {
+			if (! is_array ( $data )) {
+				return "content={$data}";
+			}
+			
+			$string = '';
+			foreach ( $data as $k => $v ) {
+				$string .= "{$k}={$v}&";
+			}
+			
+			return substr ( $string, 0, - 1 );
+		}
+
+		private function send2Fanfou($item) {
+			$postdata['status'] = $item;
+			$this->postManager($postdata, true, $this->accounts[fanfou_email], $this->passwords[fanfou_password], $this->uris[fanfou_uri]);
+
+		}
+		private function send2Renjian($item) {
+			$postdata['text'] = $item;
+			$this->postManager($postdata, true, $this->accounts[renjian_email], $this->passwords[renjian_password], $this->uris[renjian_uri]);
+		}
 
 		private function send2Sina($item) {
-			$postdata = array('source=702420162','status='.urlencode($item));
-
-			$ch = curl_init();	
-			curl_setopt($ch, CURLOPT_POSTFIELDS, join('&', $postdata));
-			curl_setopt($ch, CURLOPT_USERPWD, $this->accounts[sina_email].':'.$this->passwords[sina_password]);
-			$url = 'http://api.t.sina.com.cn/statuses/update.json';
-			curl_setopt($ch, CURLOPT_URL, $url);
-			
-			$ret = curl_exec($ch);
+			$postdata['source']= '702420162';
+			$postdata['status']= $item;
+			$this->postManager($postdata, false, $this->accounts[sina_email], $this->passwords[sina_password], $this->uris[sina_uri]);
 		}
 
 		private function send2RenRen($item){
 			$renren_login = "http://3g.renren.com/login.do?fx=0&autoLogin=true";
-			$post = 'sour=home&status='.urlencode($item).'&update=发布';
-			
-			echo l("Prepare to log in...\n");
+			$post = 'sour=home&status='.$item.'&update=发布';
+			$cookie_file = tempnam($this->cookies_path,$this->cookie_files[renren_cookie]);
+
 			try{
 			    $ch = curl_init();
-		    	curl_setopt($ch,CURLOPT_COOKIEJAR,$this->cookie_files[renren_cookie]);
+		    	curl_setopt($ch,CURLOPT_COOKIEJAR,$cookie_file);
 	   		 	curl_setopt($ch,CURLOPT_URL,$renren_login);
 			    curl_setopt($ch,CURLOPT_POST,TRUE);
 			    curl_setopt($ch,CURLOPT_FOLLOWLOCATION,TRUE);
@@ -122,7 +170,6 @@
 			    curl_close($ch);
 			    $pattern = '/action="([^"]*)"/';
 			    preg_match($pattern,$str,$matches);
-			    echo l("Login done.\nPrepare to post...\n");
 		    } catch(Exception $e) {
 		    	echo l($e->getMessage());
 		    }
@@ -132,10 +179,9 @@
 			    curl_setopt($ch,CURLOPT_POST,TRUE);
 			    curl_setopt($ch,CURLOPT_POSTFIELDS,$post);
 			    curl_setopt($ch,CURLOPT_RETURNTRANSFER,TRUE);
-			    curl_setopt($ch,CURLOPT_COOKIEFILE,$this->cookie_files[renren_cookie]);
+			    curl_setopt($ch,CURLOPT_COOKIEFILE,$cookie_file);
 			    $ret = curl_exec($ch);
 			    curl_close($ch);
-			    echo l("Post done.\n");
 		    } catch(Exception $e){
 		    	echo l($e->getMessage());
 		    }
