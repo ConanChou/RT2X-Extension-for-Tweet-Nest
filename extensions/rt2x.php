@@ -41,7 +41,7 @@
 
 			if (stripos($item, "#2all") !== false) {
 				if (stripos($item, "#2all|") !== false) {
-					$startStr = "#2all|";
+					$startStr = "#2all\|";
 					$offset = 6;
 					$exception=true;
 				} else {
