@@ -4,7 +4,7 @@
 	 * Author: @ConanChou (http://conanblog.me)
 	 * Discription: RT2X Extension for Tweet Nest
 	 * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
-	 * Version 0.2
+	 * Version 0.3
 	 * Release Date 25/10/2010
 	****/
 
@@ -12,50 +12,86 @@
 		// Change accordingly
 		private $cookie_files = array(
 					"renren_cookie" => ""
-					); // Full path to cookie file
+					); // Full path to cookie files
 		private $accounts = array(
 					"renren_email" => "",
 					"sina_email" => ""
-					); // Your renren.com's login Email account
+					); // Your accounts
 		private $passwords = array(
 					"renren_password" => "",
 					"sina_password" => ""
-					); // Your renren.com's passcode
+					); // Your passcodes
 		// Stop editing
 		
 		public function rt2x($tweet){
 						
-			$item = str_replace("RT ","转自》",$tweet['text']);
+			$item = str_replace("RT ","转自▶",$tweet['text']);
+			$all_arr = array('r','s');
+			$exception=false;
+			$ending = '';
+
+			if (stripos($item, "#2all") !== false) {
+				if (stripos($item, "#2all|") !== false) {
+					$startStr = "#2all|";
+					$offset = 6;
+					$exception=true;
+				} else {
+					$startStr = "#2all";
+					$offset = 5;
+				}
+			} elseif (stripos($item, "#2") !== false) {
+				$startStr = "#2";
+				$offset = 2;
+			}
 			
-			$start = stripos($item, "#2[")+3;
+			$start = stripos($item, "#2")+$offset;
 			$arr = str_split($item);
-		
 			for ($i=$start;$i<=strlen($item);$i++){
-				if($arr[$i]==']'){
-					$end = $i;
+				$end = $i;
+				if($arr[$i]=='2'){
+					$ending = '2';
+					break;
+				} elseif ($arr[$i]==' ') {
+					$ending = ' ';
 					break;
 				}
 			}
-			$arr = array_slice($arr,$start,$end-$start);	
-			$cmd_arr = array_unique($arr);
-			$cmd_str = implode('',$arr);
 
-			$item = preg_replace("/#2\[".$cmd_str."\]/i","",$item);
+			if ($startStr != "#2all"){
+				$arr = array_slice($arr,$start,$end-$start);
+				$cmd_str = implode('',$arr);
+				$arr_str = strtolower($cmd_str);
+				$arr = str_split($arr_str);
+				$cmd_arr = array_unique($arr);
+				if($exception){
+					$cmd_arr = array_diff($all_arr, $cmd_arr);
+				}
+			} else {
+				$cmd_arr = $all_arr;
+				$cmd_str = '';
+			}
+			$item = preg_replace("/$startStr".$cmd_str."$ending/i","",$item);
 
+			$this->rt2xManage($item, $cmd_arr);
+		}
+
+		private function rt2xManage($item, $cmd_arr){
+			
 
 			foreach($cmd_arr as $cmd){
-				$cmd = strtolower($cmd);
 				switch($cmd){
 					case "r": 
-						$this->send2RenRen($item); 
+						$this->send2RenRen($item);
+						echo l("renren done.\n");
 						break;
 					case "s":
 						$this->send2Sina($item);
+						echo l("sina done.\n");
 						break;
 				}
 			}
-		}
 
+		}
 
 		private function send2Sina($item) {
 			$postdata = array('source=702420162','status='.urlencode($item));

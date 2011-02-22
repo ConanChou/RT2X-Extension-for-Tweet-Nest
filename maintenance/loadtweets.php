@@ -112,7 +112,7 @@
 				$q = $db->query($twitterApi->insertQuery($tweet));
 				if(!$q){
 					dieout(l(bad("DATABASE ERROR: " . $db->error())));
-				}elseif(stripos($tweet['text'], "#2[") !== false) {
+				}elseif(stripos($tweet['text'], "#2") !== false) {
 					hook("rt2x", $tweet, true);
 				}
 				$text = $tweet['text'];
