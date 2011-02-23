@@ -19,13 +19,13 @@
 					"sina_email" => "",
 					"renjian_email" => "",
 					"fanfou_email" => ""
-					); // Your renren.com's login Email account
+					); // Your microblog services' accounts
 		private $passwords = array(
 					"renren_password" => "",
 					"sina_password" => "",
 					"renjian_password" => "",
 					"fanfou_password" => ""
-					); // Your renren.com's passcode
+					); // Your passwords
 		// Stop editing
 		private $uris = array(
 					"renjian_uri" => 'http://api.renjian.com/statuses/update.xml',
