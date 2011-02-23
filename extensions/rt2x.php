@@ -4,13 +4,13 @@
 	 * Author: @ConanChou (http://conanblog.me)
 	 * Discription: RT2X Extension for Tweet Nest
 	 * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
-	 * Version 0.3.2
+	 * Version 0.3.3
 	 * Release Date 25/10/2010
 	****/
 
 	class Extension_Rt2X {
 		// Change accordingly
-		private $cookies_path = '';
+		private $cookies_path = '/home/conan1412/conanblog.me/tweets/';
 		private $cookie_files = array(
 					"renren_cookie" => ".rt2renren.cookie",
 					); // Full path to cookie file
@@ -63,6 +63,8 @@
 				} elseif ($arr[$i]==' ') {
 					$ending = ' ';
 					break;
+				} elseif ($arr[$i]=="\"") {
+					break;
 				}
 			}
 
@@ -87,21 +89,23 @@
 		private function rt2xManage($item, $cmd_arr){
 			
 			$item = urlencode($item);
-			foreach($cmd_arr as $cmd){
-				switch($cmd){
-					case "r": 
-						$this->send2RenRen($item);
-						break;
-					case "s":
-						$this->send2Sina($item);
-						break;
-					case "j":
-						$this->send2Renjian($item);
-						break;
-					case "f":
-						$this->send2Fanfou($item);
-						break;
+			if(!empty($item)){
+				foreach($cmd_arr as $cmd){
+					switch($cmd){
+						case "r": 
+							$this->send2RenRen($item);
+							break;
+						case "s":
+							$this->send2Sina($item);
+							break;
+						case "j":
+							$this->send2Renjian($item);
+							break;
+						case "f":
+							$this->send2Fanfou($item);
+							break;
 
+					}
 				}
 			}
 
