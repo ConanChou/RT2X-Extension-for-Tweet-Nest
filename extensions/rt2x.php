@@ -3,14 +3,14 @@
 	 * rt2x.php
 	 * Author: @ConanChou (http://conanblog.me)
 	 * Discription: RT2X Extension for Tweet Nest
-	 * Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
+	 * Licensed under The MIT License 
 	 * Version 0.3.3
-	 * Release Date 25/10/2010
+	 * Release Date 23/02/2011
 	****/
 
 	class Extension_Rt2X {
 		// Change accordingly
-		private $cookies_path = '/home/conan1412/conanblog.me/tweets/';
+		private $cookies_path = '';
 		private $cookie_files = array(
 					"renren_cookie" => ".rt2renren.cookie",
 					); // Full path to cookie file
@@ -19,13 +19,13 @@
 					"sina_email" => "",
 					"renjian_email" => "",
 					"fanfou_email" => ""
-					); // Your microblog services' accounts
+					); // Your renren.com's login Email account
 		private $passwords = array(
 					"renren_password" => "",
 					"sina_password" => "",
 					"renjian_password" => "",
 					"fanfou_password" => ""
-					); // Your passwords
+					); // Your renren.com's passcode
 		// Stop editing
 		private $uris = array(
 					"renjian_uri" => 'http://api.renjian.com/statuses/update.xml',
