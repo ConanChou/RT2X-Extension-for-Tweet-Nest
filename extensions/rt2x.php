@@ -4,8 +4,8 @@
 	 * Author: @ConanChou (http://conanblog.me)
 	 * Discription: RT2X Extension for Tweet Nest
 	 * Licensed under The MIT License 
-	 * Version 0.3.3
-	 * Release Date 23/02/2011
+	 * Version 0.3.4
+	 * Release Date 24/02/2011
 	****/
 
 	class Extension_Rt2X {
@@ -14,28 +14,35 @@
 		private $cookie_files = array(
 					"renren_cookie" => ".rt2renren.cookie",
 					); // Full path to cookie file
+
 		private $accounts = array(
 					"renren_email" => "",
 					"sina_email" => "",
 					"renjian_email" => "",
-					"fanfou_email" => ""
-					); // Your renren.com's login Email account
+					"fanfou_email" => "",
+					"zuosa_email" => ""
+					); // Your accounts
+
 		private $passwords = array(
 					"renren_password" => "",
 					"sina_password" => "",
 					"renjian_password" => "",
-					"fanfou_password" => ""
-					); // Your renren.com's passcode
+					"fanfou_password" => "",
+					"zuosa_password" => ""
+					); // Your passwords
+
 		// Stop editing
+
 		private $uris = array(
 					"renjian_uri" => 'http://api.renjian.com/statuses/update.xml',
 					"sina_uri" => 'http://api.t.sina.com.cn/statuses/update.json',
-					"fanfou_uri" => 'http://api.fanfou.com/statuses/update/update.xml'	
+					"fanfou_uri" => 'http://api.fanfou.com/statuses/update/update.xml',
+					"zuosa_uri" => 'http://api.zuosa.com/statuses/update.xml'
 					);
 		public function rt2x($tweet){
 						
 			$item = str_replace("RT ","转自▶",$tweet['text']);
-			$all_arr = array('r','s','j','f');
+			$all_arr = array('r','s','j','f','z');
 			$exception=false;
 			$ending = '';
 
@@ -104,7 +111,9 @@
 						case "f":
 							$this->send2Fanfou($item);
 							break;
-
+						case "z":
+							$this->send2Zuosa($item);
+							break;
 					}
 				}
 			}
@@ -141,11 +150,16 @@
 			return substr ( $string, 0, - 1 );
 		}
 
+		private function send2Zuosa($item) {
+			$postdata['status'] = $item;
+			$this->postManager($postdata, false, $this->accounts[zuosa_email], $this->passwords[zuosa_password], $this->uris[zuosa_uri]);
+		}
+
 		private function send2Fanfou($item) {
 			$postdata['status'] = $item;
 			$this->postManager($postdata, true, $this->accounts[fanfou_email], $this->passwords[fanfou_password], $this->uris[fanfou_uri]);
-
 		}
+
 		private function send2Renjian($item) {
 			$postdata['text'] = $item;
 			$this->postManager($postdata, true, $this->accounts[renjian_email], $this->passwords[renjian_password], $this->uris[renjian_uri]);
