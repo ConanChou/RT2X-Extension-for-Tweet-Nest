@@ -1,6 +1,6 @@
 Hi there,
 
-This is project RT2X Extension for Tweet Nest, Version 0.3.3, Created by Conan (@conanchou). The original project is called RT2RenRen Extension for Tweet Nest.
+This is project RT2X Extension for Tweet Nest, Created by Conan (@conanchou). The original project is called RT2RenRen Extension for Tweet Nest.
 
 RT2X will empower the project Tweet Nest (http://pongsocket.com/tweetnest/) with the feature of retweeting user chosen tweets to various micro-blogging services. 
 
