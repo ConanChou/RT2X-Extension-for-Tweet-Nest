@@ -10,10 +10,10 @@
 
 	class Extension_Rt2X {
 		// Change accordingly
-		private $cookies_path = '';
+		private $cookies_path = ''; // Full path to cookie file
 		private $cookie_files = array(
 					"renren_cookie" => ".rt2renren.cookie",
-					); // Full path to cookie file
+					); 
 
 		private $accounts = array(
 					"renren_email" => "",
@@ -151,27 +151,38 @@
 		}
 
 		private function send2Zuosa($item) {
-			$postdata['status'] = $item;
-			$this->postManager($postdata, false, $this->accounts[zuosa_email], $this->passwords[zuosa_password], $this->uris[zuosa_uri]);
+			if(!empty($this->accounts[zuosa_email])){
+				$postdata['status'] = $item;
+				$this->postManager($postdata, false, $this->accounts[zuosa_email], $this->passwords[zuosa_password], $this->uris[zuosa_uri]);
+			}
 		}
 
 		private function send2Fanfou($item) {
-			$postdata['status'] = $item;
-			$this->postManager($postdata, true, $this->accounts[fanfou_email], $this->passwords[fanfou_password], $this->uris[fanfou_uri]);
+			if(!empty($this->accounts[fanfou_email])){
+				$postdata['status'] = $item;
+				$this->postManager($postdata, true, $this->accounts[fanfou_email], $this->passwords[fanfou_password], $this->uris[fanfou_uri]);
+			}
 		}
 
 		private function send2Renjian($item) {
-			$postdata['text'] = $item;
-			$this->postManager($postdata, true, $this->accounts[renjian_email], $this->passwords[renjian_password], $this->uris[renjian_uri]);
+			if(!empty($this->accounts[renjian_email])){
+				$postdata['text'] = $item;
+				$this->postManager($postdata, true, $this->accounts[renjian_email], $this->passwords[renjian_password], $this->uris[renjian_uri]);
+			}
 		}
 
 		private function send2Sina($item) {
-			$postdata['source']= '702420162';
-			$postdata['status']= $item;
-			$this->postManager($postdata, false, $this->accounts[sina_email], $this->passwords[sina_password], $this->uris[sina_uri]);
+			if(!empty($this->accounts[sina_email])){
+				$postdata['source']= '702420162';
+				$postdata['status']= $item;
+				$this->postManager($postdata, false, $this->accounts[sina_email], $this->passwords[sina_password], $this->uris[sina_uri]);
+			}
 		}
 
 		private function send2RenRen($item){
+			if(empty($this->accounts[renren_email])){
+				return;
+			}
 			$renren_login = "http://3g.renren.com/login.do?fx=0&autoLogin=true";
 			$post = 'sour=home&status='.$item.'&update=发布';
 			$cookie_file = tempnam($this->cookies_path,$this->cookie_files[renren_cookie]);
