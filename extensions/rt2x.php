@@ -214,6 +214,9 @@
 		    } catch(Exception $e){
 		    	echo l($e->getMessage());
 		    }
+			if (file_exists ( $cookie_file )) {
+				unlink ( $cookie_file );
+			}
 		}
 	}
 	
